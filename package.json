@@ -1,6 +1,6 @@
 {
   "name": "lupid-sdk",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Lupid SDK monorepo — @lupid/sdk (TypeScript SDK) and @lupid/react (embed UI) for the Agentum agentic-governance engine",
   "license": "Apache-2.0",
