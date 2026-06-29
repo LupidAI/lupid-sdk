@@ -1,0 +1,155 @@
+version: 1
+description: |
+  Canonical fixtures for Rust/TS PII parity testing (Y09).
+
+  Each entry asserts that BOTH the Rust `agentum-dlp::Detector` and the
+  TypeScript `@lupid/sdk-js` scanner return the same `expected_matches`
+  when run against `input` with only the named `pattern_id` enabled.
+
+  Single-pattern semantics: the Rust test calls `Detector::match_named_all`
+  (which builds a fresh single-classifier detector for the id), and the
+  TS test compiles a scanner with only that pattern in its allow-list.
+  This isolates pattern behaviour from full-pack shadowing.
+
+  Shadowed cases are documented for posterity (multi-pattern runs where
+  one regex is a superset of another) and SKIPPED in both engines.
+  Adding a new shadowing relationship requires adding a fixture here with
+  `shadowed_by: <other_pattern_id>` so future contributors see why the
+  case is intentionally skipped rather than silently broken.
+
+  Match order is left-to-right, deterministic.
+
+fixtures:
+  # ── email ─────────────────────────────────────────────────────────────
+  - pattern_id: email
+    input: "contact alice@example.com or bob@example.com"
+    expected_matches:
+      - "alice@example.com"
+      - "bob@example.com"
+
+  # ── phone_us (NANP shape) ─────────────────────────────────────────────
+  # Note: the regex anchors with `\b` on the leading `1`, so the `+` (when
+  # present) is OUTSIDE the match span — the match starts at the digit.
+  - pattern_id: phone_us
+    input: "call 415-555-1212 or +1 (212) 555-2000 today"
+    expected_matches:
+      - "415-555-1212"
+      - "1 (212) 555-2000"
+
+  # ── ssn_us (regex shape only — Rust validator may further filter) ────
+  - pattern_id: ssn_us
+    input: "SSN: 123-45-6789"
+    expected_matches:
+      - "123-45-6789"
+
+  # ── credit_card (regex shape only — Luhn applied code-side) ──────────
+  # 4111-1111-1111-1111 is a known test Visa with valid Luhn.
+  - pattern_id: credit_card
+    input: "card 4111-1111-1111-1111 on file"
+    expected_matches:
+      - "4111-1111-1111-1111"
+
+  # ── ip_address ───────────────────────────────────────────────────────
+  - pattern_id: ip_address
+    input: "src=10.0.0.1 dst=192.168.1.42"
+    expected_matches:
+      - "10.0.0.1"
+      - "192.168.1.42"
+
+  # ── aws_access_key_id ────────────────────────────────────────────────
+  - pattern_id: aws_access_key_id
+    input: "creds AKIAIOSFODNN7EXAMPLE for staging"
+    expected_matches:
+      - "AKIAIOSFODNN7EXAMPLE"
+
+  # ── aws_secret_access_key (key= prefix anchor; case-insensitive) ────
+  - pattern_id: aws_secret_access_key
+    input: "AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    expected_matches:
+      - "AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+  # ── github_token ─────────────────────────────────────────────────────
+  - pattern_id: github_token
+    input: "auth ghp_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa for repo"
+    expected_matches:
+      - "ghp_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+  # ── slack_token ──────────────────────────────────────────────────────
+  - pattern_id: slack_token
+    input: "token xoxb-1234567890-1234567890-aaaaaaaaaaaaaaaaaaaaaaaa here"
+    expected_matches:
+      - "xoxb-1234567890-1234567890-aaaaaaaaaaaaaaaaaaaaaaaa"
+
+  # ── openai_key ───────────────────────────────────────────────────────
+  - pattern_id: openai_key
+    input: "key=sk-abcdefghijklmnopqrstuvwxyz0123"
+    expected_matches:
+      - "sk-abcdefghijklmnopqrstuvwxyz0123"
+
+  # ── anthropic_key (isolated — passes in single-pattern mode) ─────────
+  - pattern_id: anthropic_key
+    input: "key=sk-ant-api03-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    expected_matches:
+      - "sk-ant-api03-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+  # ── google_api_key (exactly 35 chars after AIza) ─────────────────────
+  - pattern_id: google_api_key
+    input: "googleApiKey=AIzaSyA-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    expected_matches:
+      - "AIzaSyA-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+  # ── jwt_token ────────────────────────────────────────────────────────
+  - pattern_id: jwt_token
+    input: "Bearer eyJhbGciOiJIUzI1NiIs.eyJzdWIiOiIxMjM0NTY3ODkw.SflKxwRJSMeKKF2QT4f"
+    expected_matches:
+      - "eyJhbGciOiJIUzI1NiIs.eyJzdWIiOiIxMjM0NTY3ODkw.SflKxwRJSMeKKF2QT4f"
+
+  # ── private_key_pem (header line only — block expansion lives in redactor) ─
+  - pattern_id: private_key_pem
+    input: "-----BEGIN RSA PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w\n-----END RSA PRIVATE KEY-----"
+    expected_matches:
+      - "-----BEGIN RSA PRIVATE KEY-----"
+
+  # ── Shadowing cases (skipped — see header note) ───────────────────────
+
+  # The `anthropic_key` shape `sk-ant-api##-...` is a superset of the
+  # `openai_key` shape `sk-(?:proj-)?[A-Za-z0-9_\-]{20,}`. In a multi-
+  # pattern scan, openai_key fires first and consumes the span; the
+  # anthropic_key kind is therefore absent from the merged report.
+  # The parity test SKIPS this case — both engines exhibit the same
+  # shadowing and asserting "no anthropic match in multi-pattern mode"
+  # is the redact-pipeline's contract, not this fixture's.
+  - pattern_id: anthropic_key
+    input: "key=sk-ant-api03-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    expected_matches: []
+    shadowed_by: openai_key
+    note: |
+      openai_key regex `\bsk-(?:proj-)?[A-Za-z0-9_\-]{20,}\b` matches the
+      `sk-ant-api03-...` lead because `\b` does not separate `sk-` from
+      `ant-`. The full-pack scanner gives openai_key precedence, masking
+      the anthropic_key kind in `Detector::scan` reports. Single-pattern
+      mode (used by the un-shadowed fixture above) still validates the
+      anthropic_key regex on its own.
+
+  # ip_address shape can fire inside a longer credit_card-style digit
+  # run if the input contains dotted-decimal substrings (`1.2.3.4`)
+  # adjacent to other digits — rare in practice but recorded here as a
+  # known overlap class for future regression triage.
+  - pattern_id: ip_address
+    input: "card 4111-1111-1111-1111 and ip 10.0.0.1"
+    expected_matches:
+      - "10.0.0.1"
+    # NOT shadowed — listed as a sanity-check that single-pattern mode
+    # isolates this even when credit_card-shaped digit runs are present.
+
+  # ── bearer_token (opaque non-JWT bearer; jwt_token shadows real JWTs) ──
+  - pattern_id: bearer_token
+    input: "auth Bearer abcdefghijklmnopqrstuvwxyz012345 ok"
+    expected_matches:
+      - "Bearer abcdefghijklmnopqrstuvwxyz012345"
+
+  # ── generic_high_entropy (coarse 40+ char base64-class run) ───────────
+  - pattern_id: generic_high_entropy
+    input: "blob AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA end"
+    expected_matches:
+      - "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"

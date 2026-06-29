@@ -1,0 +1,12 @@
+# gitleaks config for the public Lupid SDK repo.
+# Runs in CI on every push/PR as a required check.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Synthetic secrets in PII-detector test fixtures. These are intentional dummy values (fake JWTs, sample API-key shapes, dummy PEM blocks) used to verify the PII scanner detects+masks them — they are not real credentials."
+paths = [
+  '''packages/sdk/tests/pii/.*''',
+  '''packages/sdk/scripts/generate-pii-patterns\.mjs''',
+  '''pii-patterns/.*\.yaml''',
+]

@@ -1,0 +1,28 @@
+{
+  "name": "lupid-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lupid SDK monorepo — @lupid/sdk (TypeScript SDK) and @lupid/react (embed UI) for the Agentum agentic-governance engine",
+  "license": "Apache-2.0",
+  "author": "Lupid",
+  "homepage": "https://github.com/lupidai/lupid-sdk#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lupidai/lupid-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lupidai/lupid-sdk/issues"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

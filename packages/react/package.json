@@ -1,0 +1,81 @@
+{
+  "name": "@lupid/react",
+  "version": "0.1.0",
+  "description": "React components for embedding Lupid capability governance UI in host applications",
+  "license": "Apache-2.0",
+  "author": "Lupid",
+  "keywords": [
+    "lupid",
+    "agentum",
+    "agentic-iam",
+    "react",
+    "capabilities",
+    "governance"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lupidai/lupid-sdk.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/lupidai/lupid-sdk/tree/main/packages/react#readme",
+  "bugs": {
+    "url": "https://github.com/lupidai/lupid-sdk/issues"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "typecheck:tests": "tsc -p tsconfig.tests.json",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "ts-jest": "^29.2.2",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.3"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

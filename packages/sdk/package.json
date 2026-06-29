@@ -1,0 +1,155 @@
+{
+  "name": "@lupid/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript/JavaScript SDK for the Agentum engine — agentic governance & IAM enforcement",
+  "license": "Apache-2.0",
+  "author": "Lupid",
+  "keywords": [
+    "agentum",
+    "agentic-iam",
+    "ai-agent",
+    "security",
+    "langchain",
+    "vercel-ai"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lupidai/lupid-sdk.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/lupidai/lupid-sdk/tree/main/packages/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/lupidai/lupid-sdk/issues"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./frameworks/langchain": {
+      "types": "./dist/frameworks/langchain.d.ts",
+      "import": "./dist/frameworks/langchain.mjs",
+      "require": "./dist/frameworks/langchain.js"
+    },
+    "./frameworks/vercel-ai": {
+      "types": "./dist/frameworks/vercel-ai.d.ts",
+      "import": "./dist/frameworks/vercel-ai.mjs",
+      "require": "./dist/frameworks/vercel-ai.js"
+    },
+    "./frameworks/openai": {
+      "types": "./dist/frameworks/openai.d.ts",
+      "import": "./dist/frameworks/openai.mjs",
+      "require": "./dist/frameworks/openai.js"
+    },
+    "./frameworks/express": {
+      "types": "./dist/frameworks/express.d.ts",
+      "import": "./dist/frameworks/express.mjs",
+      "require": "./dist/frameworks/express.js"
+    },
+    "./frameworks/nextjs": {
+      "types": "./dist/frameworks/nextjs.d.ts",
+      "import": "./dist/frameworks/nextjs.mjs",
+      "require": "./dist/frameworks/nextjs.js"
+    },
+    "./frameworks/fastify": {
+      "types": "./dist/frameworks/fastify.d.ts",
+      "import": "./dist/frameworks/fastify.mjs",
+      "require": "./dist/frameworks/fastify.js"
+    },
+    "./frameworks/nestjs": {
+      "types": "./dist/frameworks/nestjs.d.ts",
+      "import": "./dist/frameworks/nestjs.mjs",
+      "require": "./dist/frameworks/nestjs.js"
+    },
+    "./lite": {
+      "types": "./dist/lite.d.ts",
+      "import": "./dist/lite.mjs",
+      "require": "./dist/lite.js"
+    },
+    "./init": {
+      "types": "./dist/init.d.ts",
+      "import": "./dist/init.mjs",
+      "require": "./dist/init.js"
+    },
+    "./pii": {
+      "types": "./dist/pii.d.ts",
+      "import": "./dist/pii.mjs",
+      "require": "./dist/pii.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "prebuild": "node scripts/generate-pii-patterns.mjs",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "typecheck:tests": "tsc -p tsconfig.tests.json",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.9",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "jest": "^29.7.0",
+    "nock": "^14.0.13",
+    "openai": "^4.104.0",
+    "ts-jest": "^29.2.2",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.3"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=0.27.0",
+    "@langchain/core": ">=0.2.0",
+    "@nestjs/common": ">=9.0.0",
+    "ai": ">=3.0.0",
+    "fastify": ">=4.0.0",
+    "openai": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@langchain/core": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    },
+    "fastify": {
+      "optional": true
+    },
+    "@nestjs/common": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "eventsource": "^3.0.2",
+    "lru-cache": "^11.3.6",
+    "yaml": "^2.9.0"
+  }
+}

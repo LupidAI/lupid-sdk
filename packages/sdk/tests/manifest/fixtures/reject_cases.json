@@ -1,0 +1,82 @@
+[
+  {
+    "name": "rule1_two_scoping_errors",
+    "expected_code": "MultipleScopingDimensions",
+    "yaml": "version: 1\nscoping_dimension: account_id\ndimensions:\n  - name: account_id\n    source: { kind: context, path: account_id }\n    scoping: true\n  - name: bot_id\n    source: { kind: context, path: bot_id }\n    scoping: true\n"
+  },
+  {
+    "name": "rule1_one_scoping_mismatched_errors",
+    "expected_code": "UnknownScopingDimension",
+    "yaml": "version: 1\nscoping_dimension: bot_id\ndimensions:\n  - name: account_id\n    source: { kind: context, path: account_id }\n    scoping: true\n"
+  },
+  {
+    "name": "rule2_upper_case_name_errors",
+    "expected_code": "InvalidDimensionName",
+    "yaml": "version: 1\ndimensions:\n  - name: Account_ID\n    source: { kind: context, path: x }\n"
+  },
+  {
+    "name": "rule2_underscore_prefix_errors",
+    "expected_code": "InvalidDimensionName",
+    "yaml": "version: 1\ndimensions:\n  - name: _x\n    source: { kind: context, path: x }\n"
+  },
+  {
+    "name": "rule2_33_char_name_errors",
+    "expected_code": "InvalidDimensionName",
+    "yaml": "version: 1\ndimensions:\n  - name: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n    source: { kind: context, path: x }\n"
+  },
+  {
+    "name": "rule3_duplicate_cedar_attribute_errors",
+    "expected_code": "DuplicateCedarAttribute",
+    "yaml": "version: 1\ndimensions:\n  - name: a\n    source: { kind: context, path: a }\n    cedar: { attribute: account, type: String }\n  - name: b\n    source: { kind: context, path: b }\n    cedar: { attribute: account, type: String }\n"
+  },
+  {
+    "name": "rule4_missing_dim_prefix_errors",
+    "expected_code": "InvalidClickhouseColumnPrefix",
+    "yaml": "version: 1\ndimensions:\n  - name: a\n    source: { kind: context, path: a }\n    clickhouse: { column: account_id }\n"
+  },
+  {
+    "name": "rule4_duplicate_column_errors",
+    "expected_code": "DuplicateClickhouseColumn",
+    "yaml": "version: 1\ndimensions:\n  - name: a\n    source: { kind: context, path: a }\n    clickhouse: { column: dim_x }\n  - name: b\n    source: { kind: context, path: b }\n    clickhouse: { column: dim_x }\n"
+  },
+  {
+    "name": "rule5_forward_reference_errors",
+    "expected_code": "DerivedReferenceMissing",
+    "yaml": "version: 1\ndimensions:\n  - name: b\n    source: { kind: derived, template: '${a}' }\n  - name: a\n    source: { kind: context, path: a }\n"
+  },
+  {
+    "name": "rule5_self_reference_errors",
+    "expected_code": "DerivedReferenceMissing",
+    "yaml": "version: 1\ndimensions:\n  - name: a\n    source: { kind: derived, template: '${a}' }\n"
+  },
+  {
+    "name": "rule5_two_cycle_errors",
+    "expected_code": "DerivedReferenceMissing",
+    "yaml": "version: 1\ndimensions:\n  - name: a\n    source: { kind: derived, template: '${b}' }\n  - name: b\n    source: { kind: derived, template: '${a}' }\n"
+  },
+  {
+    "name": "rule6_unknown_enrichment_ref_errors",
+    "expected_code": "UnknownEnrichmentRef",
+    "yaml": "version: 1\ndimensions:\n  - name: x\n    source: { kind: enrichment, enrichment_ref: classify_xyz }\n"
+  },
+  {
+    "name": "rule9_pii_hash_no_cedar_errors",
+    "expected_code": "PiiRequiresCedarAttribute",
+    "yaml": "version: 1\ndimensions:\n  - name: u\n    source: { kind: context, path: u }\n    pii: hash\n"
+  },
+  {
+    "name": "rule9_pii_tokenize_no_cedar_errors",
+    "expected_code": "PiiRequiresCedarAttribute",
+    "yaml": "version: 1\ndimensions:\n  - name: u\n    source: { kind: context, path: u }\n    pii: tokenize\n"
+  },
+  {
+    "name": "rule9_pii_hash_long_type_errors",
+    "expected_code": "PiiCedarTypeMismatch",
+    "yaml": "version: 1\ndimensions:\n  - name: u\n    source: { kind: context, path: u }\n    pii: hash\n    cedar: { attribute: user, type: Long }\n"
+  },
+  {
+    "name": "rule10_25_materialized_errors",
+    "expected_code": "TooManyMaterialized",
+    "yaml": "version: 1\ndimensions:\n  - name: d0\n    source: { kind: context, path: d0 }\n    clickhouse: { column: dim_d0 }\n  - name: d1\n    source: { kind: context, path: d1 }\n    clickhouse: { column: dim_d1 }\n  - name: d2\n    source: { kind: context, path: d2 }\n    clickhouse: { column: dim_d2 }\n  - name: d3\n    source: { kind: context, path: d3 }\n    clickhouse: { column: dim_d3 }\n  - name: d4\n    source: { kind: context, path: d4 }\n    clickhouse: { column: dim_d4 }\n  - name: d5\n    source: { kind: context, path: d5 }\n    clickhouse: { column: dim_d5 }\n  - name: d6\n    source: { kind: context, path: d6 }\n    clickhouse: { column: dim_d6 }\n  - name: d7\n    source: { kind: context, path: d7 }\n    clickhouse: { column: dim_d7 }\n  - name: d8\n    source: { kind: context, path: d8 }\n    clickhouse: { column: dim_d8 }\n  - name: d9\n    source: { kind: context, path: d9 }\n    clickhouse: { column: dim_d9 }\n  - name: d10\n    source: { kind: context, path: d10 }\n    clickhouse: { column: dim_d10 }\n  - name: d11\n    source: { kind: context, path: d11 }\n    clickhouse: { column: dim_d11 }\n  - name: d12\n    source: { kind: context, path: d12 }\n    clickhouse: { column: dim_d12 }\n  - name: d13\n    source: { kind: context, path: d13 }\n    clickhouse: { column: dim_d13 }\n  - name: d14\n    source: { kind: context, path: d14 }\n    clickhouse: { column: dim_d14 }\n  - name: d15\n    source: { kind: context, path: d15 }\n    clickhouse: { column: dim_d15 }\n  - name: d16\n    source: { kind: context, path: d16 }\n    clickhouse: { column: dim_d16 }\n  - name: d17\n    source: { kind: context, path: d17 }\n    clickhouse: { column: dim_d17 }\n  - name: d18\n    source: { kind: context, path: d18 }\n    clickhouse: { column: dim_d18 }\n  - name: d19\n    source: { kind: context, path: d19 }\n    clickhouse: { column: dim_d19 }\n  - name: d20\n    source: { kind: context, path: d20 }\n    clickhouse: { column: dim_d20 }\n  - name: d21\n    source: { kind: context, path: d21 }\n    clickhouse: { column: dim_d21 }\n  - name: d22\n    source: { kind: context, path: d22 }\n    clickhouse: { column: dim_d22 }\n  - name: d23\n    source: { kind: context, path: d23 }\n    clickhouse: { column: dim_d23 }\n  - name: d24\n    source: { kind: context, path: d24 }\n    clickhouse: { column: dim_d24 }\n"
+  }
+]

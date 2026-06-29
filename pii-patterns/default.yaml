@@ -1,0 +1,117 @@
+version: 1
+description: |
+  Canonical PII regex patterns shared between Rust agentum-dlp::Detector and
+  the future TS @lupid/sdk-js PII scanner (Y04). Y09 CI gate enforces parity.
+
+  Two of these patterns (ssn_us, credit_card) are paired with an algorithmic
+  validator on the Rust side (SSA area/group/serial rules; Luhn check). The
+  regex in this file captures the candidate shape — validators run in code,
+  language-side, on top of the regex match. TS Layer-2 scanners may either
+  inherit the same validators or treat the regex as a candidate filter.
+
+  Guiding principle: HIGH PRECISION over high recall. An AI-DLP
+  false-positive corrupts the conversation context for the next N turns.
+  Uncommon shapes are missed on purpose; operators add custom classifiers
+  for internal formats.
+
+patterns:
+  - id: email
+    label: "Email address"
+    pattern: '(?i)\b[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}\b'
+    severity: medium
+    description: "RFC 5322-ish email shape, case-insensitive, intentionally lax."
+
+  - id: phone_us
+    label: "US phone number (NANP)"
+    pattern: '\b(?:\+?1[\s\-.]?)?\(?([2-9][0-8][0-9])\)?[\s\-.]?([2-9][0-9]{2})[\s\-.]?([0-9]{4})\b'
+    severity: medium
+    description: "NANP shape. Skips loose 10-digit runs to avoid timestamps/IDs."
+
+  - id: ssn_us
+    label: "US Social Security Number"
+    pattern: '\b(\d{3})[\s\-]?(\d{2})[\s\-]?(\d{4})\b'
+    severity: high
+    description: "Candidate shape. Rust pairs with SSA validity rules (area != 000/666/9xx; group != 00; serial != 0000)."
+
+  - id: credit_card
+    label: "Credit card number"
+    pattern: '\b(?:\d[ \-]?){12,18}\d\b'
+    severity: high
+    description: "13–19 digit run with optional spaces/hyphens. Rust pairs with a Luhn check."
+
+  - id: ip_address
+    label: "IPv4 address"
+    pattern: '\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+    severity: medium
+    description: "IPv4. Includes private ranges by design."
+
+  - id: aws_access_key_id
+    label: "AWS access key ID"
+    pattern: '\b(?:AKIA|ASIA)[0-9A-Z]{16}\b'
+    severity: critical
+    description: "AKIA (long-term) and ASIA (STS) prefixes."
+
+  - id: aws_secret_access_key
+    label: "AWS secret access key"
+    pattern: '(?i)aws_secret_access_key[\s]*[:=][\s]*[A-Za-z0-9/+=]{40}'
+    severity: critical
+    description: "Anchored on the key= prefix to avoid firing on any 40-char base64-ish run."
+
+  - id: github_token
+    label: "GitHub token"
+    pattern: '\bgh[pousr]_[A-Za-z0-9]{36,255}\b'
+    severity: critical
+    description: "Classic PAT, fine-grained, app, user-to-server, refresh, OAuth tokens."
+
+  - id: slack_token
+    label: "Slack token"
+    pattern: '\bxox[baprs]-[0-9]{10,13}-[0-9]{10,13}-[A-Za-z0-9]{24,34}\b'
+    severity: critical
+
+  - id: openai_key
+    label: "OpenAI API key"
+    pattern: '\bsk-(?:proj-)?[A-Za-z0-9_\-]{20,}\b'
+    severity: critical
+    description: "Classic sk- and newer sk-proj- project-scoped keys."
+
+  - id: anthropic_key
+    label: "Anthropic API key"
+    pattern: '\bsk-ant-api\d{2}-[A-Za-z0-9_\-]{90,}\b'
+    severity: critical
+
+  - id: google_api_key
+    label: "Google API key"
+    pattern: '\bAIza[0-9A-Za-z_\-]{35}\b'
+    severity: critical
+
+  - id: jwt_token
+    label: "JWT"
+    pattern: '\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\b'
+    severity: critical
+    description: "Three base64url-ish segments separated by dots, starting with the {\"alg\":... header prefix."
+
+  - id: private_key_pem
+    label: "PEM private key"
+    pattern: '-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY-----'
+    severity: critical
+    description: "PEM header line only. Redaction handler extends to the full BEGIN/END block."
+
+  - id: bearer_token
+    label: "HTTP Bearer token"
+    pattern: '(?i)\bBearer\s+[A-Za-z0-9\-._~+/]{20,}\b'
+    severity: critical
+    description: >
+      Authorization: Bearer <token> shape. Long enough (>=20 chars after the keyword)
+      to skip common test fixtures while catching real JWTs and opaque tokens.
+      NOTE: jwt_token fires first on most JWTs; this catches non-JWT bearers.
+
+  - id: generic_high_entropy
+    label: "Generic high-entropy secret"
+    pattern: '[A-Za-z0-9+/]{40,}={0,2}'
+    severity: critical
+    description: >
+      40-char base64 run (>=40 chars before optional padding) as a coarse heuristic
+      for high-entropy opaque secrets. High false-positive risk on long identifiers
+      and binary blobs - kept at 40 chars minimum to reduce noise. Operators with
+      high-FP environments may disable via AGENTUM__DLP_BLOCK_KINDS exclusion or a
+      custom Detector build.
